@@ -87,7 +87,6 @@ void Client::ReceiveMessages() {
                     int count = responseJson["count"];
                     int ownerId = responseJson["client_id"];
                     if(count) {
-                        FileViewModel::GetInstance()->searchResults.clear();
                         for (size_t i = 0; i < count; i++) {
                             FileViewModel::GetInstance()->searchResults.emplace_back(ownerId, responseJson["files"][i]);
                         }

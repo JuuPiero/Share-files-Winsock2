@@ -13,6 +13,7 @@ FileViewModel* FileViewModel::GetInstance() {
 }
 
 void FileViewModel::OnSearch(std::string keywords) {
+    FileViewModel::GetInstance()->searchResults.clear();
     json requestData;
     requestData["command"] = Client::Command::SEARCH;
     requestData["sender_id"] = Client::GetInstance()->GetId();
