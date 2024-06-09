@@ -1,5 +1,5 @@
 #pragma once
-#define DEFAULT_BUFLEN 2048
+#define DEFAULT_BUFLEN 1000000
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
@@ -39,5 +39,5 @@ using json = nlohmann::json;
 #include "Core/Application.h"
 #include "Core/StatusCode.h"
 #include "Core/UI.h"
-
+#include "base64.h"
 #include "FileViewModel.h"

@@ -1,4 +1,7 @@
 #pragma once
 #include "pch.h"
-void FileElement();
 GLuint LoadTextureFromFile(const char* filename);
+
+GLuint BasicFileTexture();
+
+GLuint JPGTexture();

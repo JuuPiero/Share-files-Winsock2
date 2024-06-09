@@ -2,18 +2,10 @@
 
 int main(int argc, char* argv[]) {
     
-
-
-    
     auto app = Application::GetInstance();
-    std::cout << "Files in directory '" << getenv("STORAGE_DIR") << "':" << std::endl;
-    for (const auto& file : FileViewModel::GetInstance()->files) {
-        std::cout << file << std::endl;
-    }
-
-
-    GLuint myTexture = LoadTextureFromFile("../assets/file.png");
-    app->Run([&myTexture]() {
+    
+    GLuint basicFileTexture = BasicFileTexture();
+    app->Run([&basicFileTexture]() {
         // int tableRowCount = FileViewModel::GetInstance()->files.size() / tableColumnCount;
         FileViewModel::GetInstance()->Update();
 
@@ -21,32 +13,23 @@ int main(int argc, char* argv[]) {
             Client::GetInstance()->Connect();
         }
 
-        if(ImGui::InputTextMultiline(" ", FileViewModel::GetInstance()->searchKeywordsBuffer , 100, ImVec2(0, 35))) {
-
-        }
+        if(ImGui::InputTextMultiline(" ", FileViewModel::GetInstance()->searchKeywordsBuffer , 100, ImVec2(0, 35))) {}
         ImGui::SameLine();
         if(ImGui::Button("Search")) {
+            FileViewModel::GetInstance()->searchResults.clear();
             FileViewModel::GetInstance()->OnSearch(std::string(FileViewModel::GetInstance()->searchKeywordsBuffer));
         }
-        // int columns = FileViewModel::GetInstance()->files.size() > 10 ? 10 : FileViewModel::GetInstance()->files.size();
-        // int rows = std::ceil(double(FileViewModel::GetInstance()->files.size() * 1.0f) / 10);
-        // std::cout << rows << std::endl;
-        // std::cout << columns << std::endl;
 
         ImGui::Text("Search Result(s) :");
-        if (ImGui::BeginTable("TableExample", 10)) {
+        if (ImGui::BeginTable("Search result", 10)) {
             auto searchResults = FileViewModel::GetInstance()->searchResults;
             for (int i = 0; i < searchResults.size(); i++) {
                 // Tạo hàng mới khi cần thiết
-                if (i % 10 == 0) {
-                    ImGui::TableNextRow();
-                }
+                if (i % 10 == 0) ImGui::TableNextRow();
                 // Thiết lập chỉ số cột
                 ImGui::TableSetColumnIndex(i % 10);
-        
                 // Hiển thị hình ảnh của file
-                ImGui::Image((void*)(intptr_t)myTexture, ImVec2(128, 128));
-        
+                ImGui::Image((void*)(intptr_t)basicFileTexture, ImVec2(128, 128));
                 // Tính toán kích thước văn bản và căn giữa nó
                 ImVec2 textSize = ImGui::CalcTextSize(searchResults[i].second.c_str());
                 ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (ImGui::GetColumnWidth() - textSize.x) * 0.5f);
@@ -59,36 +42,45 @@ int main(int argc, char* argv[]) {
                 //down btn
                 textSize = ImGui::CalcTextSize(searchResults[i].second.c_str());
                 ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (ImGui::GetColumnWidth() - textSize.x) * 0.5f);
-                ImGui::Button("Download");
+                if(ImGui::Button("Download")) {
+                    FileViewModel::GetInstance()->OnDownload(searchResults[i].first, searchResults[i].second);
+                }
             }
         }
         ImGui::EndTable();
 
         ImGui::Text("Your file(s) :");
-        if (ImGui::BeginTable("TableExample", 10)) {
+        if (ImGui::BeginTable("My Share Files", 10)) {
             for (int i = 0; i < FileViewModel::GetInstance()->files.size(); i++) {
-                // Tạo hàng mới khi cần thiết
                 if (i % FileViewModel::GetInstance()->columns == 0) {
                     ImGui::TableNextRow();
                 }
-                // Thiết lập chỉ số cột
                 ImGui::TableSetColumnIndex(i % FileViewModel::GetInstance()->columns);
-        
-                // Hiển thị hình ảnh của file
-                ImGui::Image((void*)(intptr_t)myTexture, ImVec2(128, 128));
-        
-                // Tính toán kích thước văn bản và căn giữa nó
+                ImGui::Image((void*)(intptr_t)basicFileTexture, ImVec2(128, 128));
                 ImVec2 textSize = ImGui::CalcTextSize(FileViewModel::GetInstance()->files[i].c_str());
                 float cellWidth = ImGui::GetColumnWidth();
                 ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (cellWidth - textSize.x) * 0.5f);
-            
-                // Hiển thị tên file
                 ImGui::Text("%s", FileViewModel::GetInstance()->files[i].c_str());
             }
         }
         ImGui::EndTable();
 
-        
+
+        ImGui::Text("File(s) Downloaded :");
+        if (ImGui::BeginTable("Table files Downloaded", 10)) {
+            for (int i = 0; i < FileViewModel::GetInstance()->filesDownloaded.size(); i++) {
+                if (i % FileViewModel::GetInstance()->columns == 0) {
+                    ImGui::TableNextRow();
+                }
+                ImGui::TableSetColumnIndex(i % FileViewModel::GetInstance()->columns);
+                ImGui::Image((void*)(intptr_t)basicFileTexture, ImVec2(128, 128));
+                ImVec2 textSize = ImGui::CalcTextSize(FileViewModel::GetInstance()->filesDownloaded[i].c_str());
+                float cellWidth = ImGui::GetColumnWidth();
+                ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (cellWidth - textSize.x) * 0.5f);
+                ImGui::Text("%s", FileViewModel::GetInstance()->filesDownloaded[i].c_str());
+            }
+        }
+        ImGui::EndTable();
     });
 
     app->ShutDown();

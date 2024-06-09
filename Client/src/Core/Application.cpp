@@ -143,7 +143,7 @@ void Application::LoadDotenv(const std::string& filepath)  {
 void Application::ShutDown() {
    
     m_Window->ShutDown();
-   
+    Client::GetInstance()->ShutDown();
     delete s_Instance;
     s_Instance = nullptr;
     std::cout << "Close Application" << std::endl;

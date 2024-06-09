@@ -8,25 +8,25 @@ Client::Client(): m_ServerPort(atoi(getenv("SERVER_PORT"))), m_ServerAddress(get
     int iResult = WSAStartup(MAKEWORD(2, 2), &m_WsaData);
     if (iResult != 0) {
         std::cout << "WSAStartup failed: " << iResult << std::endl;
-        ShutDown();
+        // ShutDown();
         return;
     }
     m_ClientSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (m_ClientSocket == INVALID_SOCKET) {
         std::cout << "Error at socket(): " << WSAGetLastError() << std::endl;
-        ShutDown();
+        // ShutDown();
         return;
     }
 
     m_ServerAddr.sin_family = AF_INET;
-    m_ServerAddr.sin_addr.s_addr = inet_addr(m_ServerAddress); // Địa chỉ IP của máy chủ trong mạng cục bộ
+    m_ServerAddr.sin_addr.s_addr = inet_addr(m_ServerAddress); // Địa chỉ IP của máy chủ trong mạng
     m_ServerAddr.sin_port = htons(m_ServerPort);
 
     int connectResult = connect(m_ClientSocket, (struct sockaddr*)&m_ServerAddr, sizeof(m_ServerAddr));
     if (connectResult == SOCKET_ERROR) {
         std::cout << "connect failed: " << WSAGetLastError() << std::endl;
         closesocket(m_ClientSocket);
-        ShutDown();
+        // ShutDown();
         return;
     }
 
@@ -93,8 +93,42 @@ void Client::ReceiveMessages() {
                     }
                     break;
                 }
+                case StatusCode::WAIT_DOWNLOAD_FILE: {
+                    std::cout << "Client-id: " << responseJson["sender_id"] << " want download file: " << responseJson["filename"] << std::endl;
+                    std::string filename =  responseJson["filename"];
+                    std::ifstream file(std::string(getenv("STORAGE_DIR")) + "/" + filename, std::ios::binary);
+                    if (!file) {
+                        //TODO: handle error
 
-               
+                    }
+                    std::vector<char> buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+                    file.close();
+                    std::string encodedContent = encodeBase64(buffer);
+                    json newjsonResponse;
+                    newjsonResponse["command"] = Command::SEND_FILE;
+                    newjsonResponse["filename"] = responseJson["filename"];
+                    newjsonResponse["content"] = encodedContent;
+                    newjsonResponse["client_id"] = responseJson["sender_id"];
+                    newjsonResponse["owner_id"] = GetId();
+                    SendCommand(newjsonResponse.dump());
+                    break;
+                }
+                case StatusCode::GET_FILE_SUCCESS: {
+                    std::string filename = responseJson["filename"];
+                    std::string encodedContent = responseJson["content"];
+                    std::vector<char> decodedContent = decodeBase64(encodedContent);
+                    std::ofstream file("../downloads/" + filename, std::ios::binary);
+                    if (!file) {
+                        std::cerr << "Không thể mở file để ghi!" << std::endl;
+                        // closesocket(clientSocket);
+                        // closesocket(serverSocket);
+                        // WSACleanup();
+                    }
+                    file.write(decodedContent.data(), decodedContent.size());
+                    file.close();
+                    std::cout << "Download success!" << std::endl;
+                    break;
+                }
                
                 default:
                     break;

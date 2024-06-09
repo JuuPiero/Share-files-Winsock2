@@ -1,8 +1,6 @@
 #pragma once
 
 
-#define DEFAULT_BUFLEN 1024
-
 #include "pch.h"
 
 class Server {
@@ -13,6 +11,8 @@ public:
         SEARCH = 20,
         CONNECT = 10,
         RESPONSE_SEARCH = 21,
+        DOWNLOAD = 30,
+        SEND_FILE = 31
     };
 public:
     static Server* GetInstance();

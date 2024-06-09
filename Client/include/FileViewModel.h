@@ -7,15 +7,16 @@ public:
     static FileViewModel* GetInstance();
 
     void OnSearch(std::string keywords);
-
+    void OnDownload(int ownerId, std::string filename);
     void Update();
 private:
     FileViewModel();
 public:
     static FileViewModel* s_Instance;
-    std::vector<std::string> files;
     int rows, columns;
     char searchKeywordsBuffer[100] = "";
+    std::vector<std::string> files;
+    std::vector<std::string> filesDownloaded;
     std::vector<std::pair<int, std::string>> searchResults;
 private:
 

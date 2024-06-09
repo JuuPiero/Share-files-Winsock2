@@ -95,8 +95,17 @@ void Server::ClientHandler(uint32_t clientSocketId) {
             std::cout << "message from client: " << std::endl;
             std::cout << requestData.dump(4) << std::endl;
             int command = requestData["command"];
-
-            if(command == Command::SEARCH) {
+            if(command == Command::CONNECT) {
+                std::cout << "A client connected to server: " << clientSocket << std::endl;
+                json responseJson;
+                responseJson["status"] = StatusCode::CONNECT_SUCCESS;
+                responseJson["client_id"] = (int)clientSocketId;
+                iResult = send(clientSocket, responseJson.dump().c_str(), responseJson.dump().size(), 0);
+                if (iResult == SOCKET_ERROR) {
+                    std::cout << "send failed: " << WSAGetLastError() << std::endl;
+                }
+            }
+            else if(command == Command::SEARCH) {
                 std::cout << "A client with id : " << requestData["sender_id"] << " request search file with keywords: " << requestData["keywords"] << std::endl;
 
                 json responseJson;
@@ -116,7 +125,7 @@ void Server::ClientHandler(uint32_t clientSocketId) {
             else if(command == Command::RESPONSE_SEARCH) {
                 json responseJson;
                 int count = requestData["count"];
-                std::cout << "Client with id: " << requestData["client_id"] << " has " << count << " result file(s)" << std::endl;
+                spdlog::info("Client-id: {}  has: {} result file(s)",  (int)requestData["client_id"], count);
                 if(count) {
                     responseJson["status"] = StatusCode::SEARCH_SUCCESS;
                     responseJson["count"] = count;
@@ -135,16 +144,40 @@ void Server::ClientHandler(uint32_t clientSocketId) {
                     }
                 }
             }
-            else if(command = Command::CONNECT) {
-                std::cout << "A client connected to server: " << clientSocket << std::endl;
+            else if(command == Command::DOWNLOAD) {
+                int clientId = requestData["client_id"];
+                std::string filename = requestData["filename"];
+                int ownerId = requestData["owner_id"];
+                spdlog::info("Client-id: {}  want download file: {} of client-id: {}", clientId, filename, ownerId);
+                
                 json responseJson;
-                responseJson["status"] = StatusCode::CONNECT_SUCCESS;
-                responseJson["client_id"] = clientSocketId;
-                iResult = send(clientSocket, responseJson.dump().c_str(), responseJson.dump().size(), 0);
-                if (iResult == SOCKET_ERROR) {
-                    std::cout << "send failed: " << WSAGetLastError() << std::endl;
+                responseJson["status"] = StatusCode::WAIT_DOWNLOAD_FILE;
+                responseJson["sender_id"] = clientId;
+                responseJson["owner_id"] = ownerId;
+                responseJson["filename"] = filename;
+                if(m_ClientSockets[ownerId]) {
+                    iResult = send(m_ClientSockets[ownerId], responseJson.dump().c_str(), responseJson.dump().size(), 0);
+                    if (iResult == SOCKET_ERROR) {
+                        std::cout << "send failed: " << WSAGetLastError() << std::endl;
+                    }
                 }
             }
+            else if(command == Command::SEND_FILE) {
+                json responseJson;
+                responseJson["status"] = StatusCode::GET_FILE_SUCCESS;
+                responseJson["client_id"] = requestData["client_id"];
+                responseJson["owner_id"] = requestData["owner_id"];
+                responseJson["filename"] = requestData["filename"];
+                responseJson["content"] = requestData["content"];
+
+                if(m_ClientSockets[requestData["client_id"]]) {
+                    iResult = send(m_ClientSockets[requestData["client_id"]], responseJson.dump().c_str(), responseJson.dump().size(), 0);
+                    if (iResult == SOCKET_ERROR) {
+                        std::cout << "send failed: " << WSAGetLastError() << std::endl;
+                    }
+                }
+            }
+            
             
         } else if (iResult == 0) {
             std::cout << "Connection closed by client" << std::endl;
@@ -156,7 +189,6 @@ void Server::ClientHandler(uint32_t clientSocketId) {
     closesocket(clientSocket);
 
     m_ClientSockets.erase(clientSocketId);
-    
 }
 
 Server::~Server() {}

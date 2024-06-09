@@ -9,6 +9,8 @@ public:
         SEARCH = 20,
         CONNECT = 10,
         RESPONSE_SEARCH = 21,
+        DOWNLOAD = 30,
+        SEND_FILE = 31
 
     };
 public:
