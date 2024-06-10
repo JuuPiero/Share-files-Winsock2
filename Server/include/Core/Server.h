@@ -18,10 +18,12 @@ public:
     static Server* GetInstance();
     void ShutDown();
     void Run();
-    ~Server();
+    ~Server() = default;
 
 
-    void OnSearch(uint32_t clientId, std::string keywords);
+    void OnClientConnect(uint32_t clientId);
+    void OnClientSearch(uint32_t clientId, std::string keywords);
+
 private:
     void ClientHandler(uint32_t clientSocketId);
 

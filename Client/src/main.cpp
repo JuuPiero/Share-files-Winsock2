@@ -6,7 +6,6 @@ int main(int argc, char* argv[]) {
     
     GLuint basicFileTexture = BasicFileTexture();
     app->Run([&basicFileTexture]() {
-        // int tableRowCount = FileViewModel::GetInstance()->files.size() / tableColumnCount;
         FileViewModel::GetInstance()->Update();
 
         if(ImGui::Button("Connect")) {
@@ -30,7 +29,7 @@ int main(int argc, char* argv[]) {
                 ImGui::TableSetColumnIndex(i % 10);
                 // Hiển thị hình ảnh của file
                 ImGui::Image((void*)(intptr_t)basicFileTexture, ImVec2(128, 128));
-                // Tính toán kích thước văn bản và căn giữa nó
+                // Tính toán kích thước văn bản và căn giữa
                 ImVec2 textSize = ImGui::CalcTextSize(searchResults[i].second.c_str());
                 ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (ImGui::GetColumnWidth() - textSize.x) * 0.5f);
                 // Hiển thị tên file
@@ -42,7 +41,8 @@ int main(int argc, char* argv[]) {
                 //down btn
                 textSize = ImGui::CalcTextSize(searchResults[i].second.c_str());
                 ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (ImGui::GetColumnWidth() - textSize.x) * 0.5f);
-                if(ImGui::Button("Download")) {
+                std::string buttonLabel = "Download##" + std::to_string(i);
+                if(ImGui::Button(buttonLabel.c_str())) {
                     FileViewModel::GetInstance()->OnDownload(searchResults[i].first, searchResults[i].second);
                 }
             }
