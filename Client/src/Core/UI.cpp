@@ -27,9 +27,5 @@ GLuint LoadTextureFromFile(const char* filename) {
 }
 
 GLuint BasicFileTexture() {
-    return LoadTextureFromFile("../assets/file.png");
-}
-
-GLuint JPGTexture() {
-    return LoadTextureFromFile("../assets/jpg.png");
+    return LoadTextureFromFile("./assets/file.png");
 }

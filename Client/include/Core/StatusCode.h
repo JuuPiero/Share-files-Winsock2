@@ -6,5 +6,4 @@ enum StatusCode {
     SEARCH_SUCCESS = 2,
     WAIT_DOWNLOAD_FILE = 10,
     GET_FILE_SUCCESS = 11
-
 };

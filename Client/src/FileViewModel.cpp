@@ -15,14 +15,6 @@ FileViewModel* FileViewModel::GetInstance() {
 void FileViewModel::Update() {
     files = Application::GetInstance()->LoadFiles(getenv("STORAGE_DIR"));
     filesDownloaded = Application::GetInstance()->LoadFiles(getenv("DOWNLOAD_DIR"));
-    if(files.size() <= 10) {
-        columns = files.size();
-        rows = 1;
-    }
-    else {
-        columns = 10;
-        rows = files.size() / 10 + 1;
-    }
 }
 
 void FileViewModel::OnSearch(std::string keywords) {

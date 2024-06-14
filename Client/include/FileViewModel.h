@@ -13,7 +13,6 @@ private:
     FileViewModel();
 public:
     static FileViewModel* s_Instance;
-    int rows, columns;
     char searchKeywordsBuffer[100] = "";
     std::vector<std::string> files;
     std::vector<std::string> filesDownloaded;

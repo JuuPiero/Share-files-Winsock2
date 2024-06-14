@@ -117,15 +117,15 @@ void Client::ReceiveMessages() {
                     std::string filename = responseJson["filename"];
                     std::string encodedContent = responseJson["content"];
                     std::vector<char> decodedContent = decodeBase64(encodedContent);
-                    std::ofstream file("../downloads/" + filename, std::ios::binary);
+                    std::ofstream file(std::string(getenv("DOWNLOAD_DIR")) + "/" + filename, std::ios::binary);
                     if (!file) {
-                        std::cerr << "Không thể mở file để ghi!" << std::endl;
+                        std::cerr << "cannot open this file" << std::endl;
                         // closesocket(clientSocket);
-                        // closesocket(serverSocket);
                         // WSACleanup();
                     }
                     file.write(decodedContent.data(), decodedContent.size());
                     file.close();
+                    // FileViewModel::GetInstance()->filesDownloaded = Application::GetInstance()->LoadFiles(getenv("DOWNLOAD_DIR"));
                     std::cout << "Download success!" << std::endl;
                     break;
                 }

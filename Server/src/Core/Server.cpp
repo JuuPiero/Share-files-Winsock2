@@ -3,7 +3,7 @@
 #include "pch.h"
 Server* Server::s_Insntance = nullptr;
 
-Server::Server(): m_Port(atoi(getenv("PORT"))) {
+Server::Server(): m_Port(5500) {
     // Initialize Winsock
     int iResult = WSAStartup(MAKEWORD(2, 2), &m_WsaData);
     if (iResult != 0) {
@@ -48,12 +48,7 @@ Server* Server::GetInstance() {
     }
     return s_Insntance;
 }
-void Server::ShutDown() {
-    closesocket(m_ListenSocket);
-    WSACleanup();
-    delete s_Insntance;
-    s_Insntance = nullptr;
-}
+
 
 void Server::Run() {
     // Accept a client socket
@@ -80,7 +75,6 @@ void Server::ClientHandler(uint32_t clientSocketId) {
     
     spdlog::info("A client connected to server: {}",  clientSocketId);
    
-
     do {
         iResult = recv(clientSocket, recvbuf, DEFAULT_BUFLEN, 0);
         if (iResult > 0) {
@@ -109,7 +103,6 @@ void Server::ClientHandler(uint32_t clientSocketId) {
                     responseJson["sender_id"] = requestData["sender_id"];
                     
                     for (size_t i = 0; i < count; i++) {
-                        // std::cout << requestData["files"][i] << std::endl;
                         responseJson["files"][i] = requestData["files"][i];
                     }
                     if(m_ClientSockets[responseJson["sender_id"]]) {
@@ -125,7 +118,6 @@ void Server::ClientHandler(uint32_t clientSocketId) {
                 std::string filename = requestData["filename"];
                 int ownerId = requestData["owner_id"];
                 spdlog::info("Client-id: {}  want download file: {} of client-id: {}", clientId, filename, ownerId);
-                
                 json responseJson;
                 responseJson["status"] = StatusCode::WAIT_DOWNLOAD_FILE;
                 responseJson["sender_id"] = clientId;
@@ -165,4 +157,10 @@ void Server::ClientHandler(uint32_t clientSocketId) {
     closesocket(clientSocket);
 
     m_ClientSockets.erase(clientSocketId);
+}
+void Server::ShutDown() {
+    closesocket(m_ListenSocket);
+    WSACleanup();
+    delete s_Insntance;
+    s_Insntance = nullptr;
 }
